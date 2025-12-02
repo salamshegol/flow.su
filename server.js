@@ -3,32 +3,60 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-    const host = req.headers.host || "unknown-host";
+const htmlPage = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nice Try</title>
+    <style>
+        body {
+            background: #0f0f0f;
+            color: #fff;
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 40px;
+        }
+    </style>
+</head>
+<body>
+    nice try 🐦
+</body>
+</html>
+`;
 
-    const userAgent = req.headers["user-agent"]?.toLowerCase() || "";
+const luaScript = `
+print("Щегольский картель активирован. Крот обижен.")
+
+local function init()
+    print("Lua script executed successfully.")
+end
+
+init()
+`;
+
+app.get("/", (req, res) => {
+    const ua = (req.headers["user-agent"] || "").toLowerCase();
 
     const isBrowser =
-        userAgent.includes("chrome") ||
-        userAgent.includes("firefox") ||
-        userAgent.includes("safari") ||
-        userAgent.includes("edge");
+        ua.includes("chrome") ||
+        ua.includes("firefox") ||
+        ua.includes("safari") ||
+        ua.includes("edge") ||
+        ua.includes("mozilla");
 
     if (isBrowser) {
-        return res.send("nice try");
+        res.setHeader("Content-Type", "text/html");
+        return res.send(htmlPage);
     }
 
     res.setHeader("Content-Type", "text/plain");
-
-    const script = `
-
-print("Loaded from host: ${host}")
-
-`;
-
-    res.send(script);
+    res.send(luaScript);
 });
 
 app.listen(PORT, () => {
-    console.log("Щегольский сервер запущен на порту " + PORT);
+    console.log("Щегол-сервер запущен на порту " + PORT);
 });

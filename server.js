@@ -1,38 +1,34 @@
-import express from "express";
-import fs from "fs";
-
+const express = require("express");
 const app = express();
 
-function isBrowser(req) {
-    const ua = req.headers["user-agent"] || "";
-    const secFetch = req.headers["sec-fetch-mode"];
-    const accept = req.headers["accept"] || "";
+const PORT = process.env.PORT || 3000;
 
-    if (
-        ua.includes("Mozilla") ||
-        ua.includes("Chrome") ||
-        ua.includes("Firefox") ||
-        secFetch |
-        accept.includes("text/html")
-    ) {
-        return true;
-    }
+app.get("/", (req, res) => {
+    const host = req.headers.host || "unknown-host";
 
-    return false;
-}
+    const userAgent = req.headers["user-agent"]?.toLowerCase() || "";
 
-app.get("/script", (req, res) => {
-    if (isBrowser(req)) {
+    const isBrowser =
+        userAgent.includes("chrome") ||
+        userAgent.includes("firefox") ||
+        userAgent.includes("safari") ||
+        userAgent.includes("edge");
+
+    if (isBrowser) {
         return res.send("nice try");
     }
 
-    const code = fs.readFileSync("script.lua", "utf8");
-    res.set("Content-Type", "text/plain");
-    return res.send(code);
+    res.setHeader("Content-Type", "text/plain");
+
+    const script = `
+
+print("Loaded from host: ${host}")
+
+`;
+
+    res.send(script);
 });
 
-app.get("*", (_, res) => {
-    res.send("nice try");
+app.listen(PORT, () => {
+    console.log("Щегольский сервер запущен на порту " + PORT);
 });
-
-app.listen(6969, () => console.log("крот запущен"));

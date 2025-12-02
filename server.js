@@ -3,25 +3,36 @@ import fs from "fs";
 
 const app = express();
 
-const SECRET_HEADER = "X-Executor-Key";
-const SECRET_VALUE = "gJ4i3b7PqL8s9XvZqHN2#tW3rE5uC^^^0yGis%ZfD1mA7oLkPpXcR";
+function isBrowser(req) {
+    const ua = req.headers["user-agent"] || "";
+    const secFetch = req.headers["sec-fetch-mode"];
+    const accept = req.headers["accept"] || "";
 
-app.get("/script", (req, res) => {
-    const key = req.headers[SECRET_HEADER.toLowerCase()];
-
-    if (key === SECRET_VALUE) {
-        res.set("Content-Type", "text/plain");
-        const code = fs.readFileSync("script.lua", "utf8");
-        return res.send(code);
+    if (
+        ua.includes("Mozilla") ||
+        ua.includes("Chrome") ||
+        ua.includes("Firefox") ||
+        secFetch |
+        accept.includes("text/html")
+    ) {
+        return true;
     }
 
-    return res.send("nice try");
+    return false;
+}
+
+app.get("/script", (req, res) => {
+    if (isBrowser(req)) {
+        return res.send("nice try");
+    }
+
+    const code = fs.readFileSync("script.lua", "utf8");
+    res.set("Content-Type", "text/plain");
+    return res.send(code);
 });
 
 app.get("*", (_, res) => {
     res.send("nice try");
 });
 
-app.listen(3000, () => {
-    console.log("KROT server for shegol started");
-});
+app.listen(6969, () => console.log("крот запущен"));
